@@ -27,21 +27,29 @@ function Game() {
     return () => clearInterval(interval);
   }, [gameActive]);
 
-  // Move words downward every 100ms
-  useEffect(() => {
-    if (!gameActive) return;
+// Move words downward based on difficulty
+useEffect(() => {
+  if (!gameActive) return;
 
-    const interval = setInterval(() => {
-      setFallingWords((prevWords) =>
-        prevWords.map((word) => ({
-          ...word,
-          position: { ...word.position, y: word.position.y + 5 },
-        }))
-      );
-    }, 100);
+  // Determine fall speed (higher = slower)
+  let fallSpeed = 100; // default
 
-    return () => clearInterval(interval);
-  }, [gameActive]);
+  if (timeLeft <= 45) fallSpeed = 75;
+  if (timeLeft <= 30) fallSpeed = 50;
+  if (timeLeft <= 15) fallSpeed = 30;
+
+  const interval = setInterval(() => {
+    setFallingWords((prevWords) =>
+      prevWords.map((word) => ({
+        ...word,
+        position: { ...word.position, y: word.position.y + 5 },
+      }))
+    );
+  }, fallSpeed);
+
+  return () => clearInterval(interval);
+}, [gameActive, timeLeft]);
+
 
   // Timer countdown
   useEffect(() => {
