@@ -3,7 +3,7 @@ import FallingWord from './FallingWord';
 
 const WORDS = ['apple', 'banana', 'orange', 'grape', 'melon', 'kiwi'];
 
-function Game() {
+function Game({ nextWords, setNextWords, getRandomWord }) {
   const [fallingWords, setFallingWords] = useState([]);
   const [input, setInput] = useState('');
   const [score, setScore] = useState(0);
@@ -16,40 +16,42 @@ function Game() {
     if (!gameActive) return;
 
     const interval = setInterval(() => {
+      const next = nextWords[0];
       const newWord = {
         id: Date.now(),
-        word: WORDS[Math.floor(Math.random() * WORDS.length)],
-        position: { x: Math.random() * 300, y: 0 },
+        word: next,
+        position: { x: Math.random() * 240, y: 0 },
       };
       setFallingWords((prev) => [...prev, newWord]);
+
+      // rotate the queue
+      setNextWords((prev) => [...prev.slice(1), getRandomWord()]);
+
     }, 3000);
 
     return () => clearInterval(interval);
   }, [gameActive]);
 
-// Move words downward based on difficulty
-useEffect(() => {
-  if (!gameActive) return;
+  // Move words downward based on difficulty
+  useEffect(() => {
+    if (!gameActive) return;
 
-  // Determine fall speed (higher = slower)
-  let fallSpeed = 100; // default
+    let fallSpeed = 100;
+    if (timeLeft <= 45) fallSpeed = 75;
+    if (timeLeft <= 30) fallSpeed = 50;
+    if (timeLeft <= 15) fallSpeed = 30;
 
-  if (timeLeft <= 45) fallSpeed = 75;
-  if (timeLeft <= 30) fallSpeed = 50;
-  if (timeLeft <= 15) fallSpeed = 30;
+    const interval = setInterval(() => {
+      setFallingWords((prevWords) =>
+        prevWords.map((word) => ({
+          ...word,
+          position: { ...word.position, y: word.position.y + 5 },
+        }))
+      );
+    }, fallSpeed);
 
-  const interval = setInterval(() => {
-    setFallingWords((prevWords) =>
-      prevWords.map((word) => ({
-        ...word,
-        position: { ...word.position, y: word.position.y + 5 },
-      }))
-    );
-  }, fallSpeed);
-
-  return () => clearInterval(interval);
-}, [gameActive, timeLeft]);
-
+    return () => clearInterval(interval);
+  }, [gameActive, timeLeft]);
 
   // Timer countdown
   useEffect(() => {
@@ -69,23 +71,20 @@ useEffect(() => {
     return () => clearInterval(timer);
   }, [gameActive, timeLeft]);
 
+  // Restart game
+  const restartGame = () => {
+    setScore(0);
+    setTimeLeft(60);
+    setInput('');
+    setFallingWords([]);
+    setGameActive(true);
+  };
 
-  
-    // Restart game
-    const restartGame = () => {
-        setScore(0);
-        setTimeLeft(60);
-        setInput('');
-        setFallingWords([]);
-        setGameActive(true);
-        };
-
-  // Handle typing input
+  // Handle input
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInput(value);
 
-    // Check for match
     const matched = fallingWords.find((w) => w.word === value.trim());
     if (matched) {
       setFallingWords((prev) => prev.filter((w) => w.id !== matched.id));
@@ -95,19 +94,19 @@ useEffect(() => {
   };
 
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-        <h2>Time Left: {timeLeft}s</h2>
-        <h2>Score: {score}</h2>
-      </div>
+  <div style={{ textAlign: 'center', color: 'white' }}>
+    <h2>Time Left: {timeLeft}s</h2>
+    <h2>Score: {score}</h2>
 
       <div
         ref={containerRef}
         style={{
           position: 'relative',
-          width: '100%',
+          width: '300px',
           height: '500px',
-          border: '1px solid black',
+          margin: '0 auto',
+          backgroundColor: 'black',
+          border: '2px solid white',
           overflow: 'hidden',
         }}
       >
@@ -115,41 +114,27 @@ useEffect(() => {
           <FallingWord key={fw.id} word={fw.word} position={fw.position} />
         ))}
 
-        {gameActive ? (
-          <input
-            type="text"
-            value={input}
-            onChange={handleInputChange}
+        {!gameActive && (
+          <div
             style={{
               position: 'absolute',
-              bottom: 20,
+              top: '40%',
               left: '50%',
-              transform: 'translateX(-50%)',
-              padding: '10px',
-              fontSize: '16px',
-            }}  
-          />
-        ) : (
-            <div
-            style={{
-                position: 'absolute',
-                top: '40%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center',
-                fontSize: '24px',
-                fontWeight: 'bold',
-                backgroundColor: 'white',
-                padding: '20px',
-                border: '2px solid black',
-                borderRadius: '10px',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              backgroundColor: 'white',
+              padding: '20px',
+              border: '2px solid black',
+              borderRadius: '10px',
             }}
-            >
+          >
             <p>Game Over!</p>
             <p>Your score: {score}</p>
             <button
-                onClick={restartGame}
-                style={{
+              onClick={restartGame}
+              style={{
                 marginTop: '10px',
                 padding: '10px 20px',
                 fontSize: '16px',
@@ -158,14 +143,32 @@ useEffect(() => {
                 color: '#fff',
                 border: 'none',
                 borderRadius: '5px',
-                }}
+              }}
             >
-                Restart
+              Restart
             </button>
-            </div>
+          </div>
         )}
       </div>
+
+      <input
+        type="text"
+        value={input}
+        onChange={handleInputChange}
+        placeholder="Type falling word here"
+        disabled={!gameActive}
+        style={{
+          marginTop: '20px',
+          padding: '10px 20px',
+          fontSize: '16px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          width: '300px',
+          textAlign: 'center',
+        }}
+      />
     </div>
   );
 }
+
 export default Game;

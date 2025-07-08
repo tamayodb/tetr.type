@@ -7,6 +7,8 @@ function FallingWord({ word, position }) {
         position: 'absolute',
         top: position.y,
         left: position.x,
+        color: '#ffffff', 
+        fontWeight: 'bold',
         fontSize: '24px',
         transition: 'top 0.1s linear',
       }}
