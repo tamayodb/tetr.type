@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FallingWord from './FallingWord';
 
-const WORDS = ['apple', 'banana', 'orange', 'grape', 'melon', 'kiwi'];
-
 function Game({ nextWords, setNextWords, getRandomWord }) {
   const [fallingWords, setFallingWords] = useState([]);
   const [input, setInput] = useState('');
@@ -11,7 +9,6 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
   const [gameActive, setGameActive] = useState(true);
   const containerRef = useRef(null);
 
-  // Add new word every 3 seconds
   useEffect(() => {
     if (!gameActive) return;
 
@@ -23,14 +20,11 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
         position: { x: Math.random() * 240, y: 0 },
       };
       setFallingWords((prev) => [...prev, newWord]);
-
-      // rotate the queue
       setNextWords((prev) => [...prev.slice(1), getRandomWord()]);
-
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [gameActive]);
+  }, [gameActive, nextWords, getRandomWord, setNextWords]);
 
   // Move words downward based on difficulty
   useEffect(() => {
@@ -77,6 +71,11 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
     setTimeLeft(60);
     setInput('');
     setFallingWords([]);
+    setNextWords([
+      getRandomWord(),
+      getRandomWord(),
+      getRandomWord()
+    ]);
     setGameActive(true);
   };
 
