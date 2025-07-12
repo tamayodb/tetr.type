@@ -2,34 +2,32 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Game from './Game';
 import './App.css';
 
-const WORDS = ['apple', 'banana', 'orange', 'grape', 'melon', 'kiwi'];
-
-// Helper
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
 function App() {
-  const wordIndexRef = useRef(0);
-  const shuffledRef = useRef(shuffle([...WORDS]));
+  const [nextWords, setNextWords] = useState([]);
+  const wordQueue = useRef([]);
 
-  const getRandomWord = useCallback(() => {
-    if (wordIndexRef.current >= shuffledRef.current.length) {
-      shuffledRef.current = shuffle([...WORDS]);
-      wordIndexRef.current = 0;
+  const fetchWords = async () => {
+    try {
+      const res = await fetch('https://random-word-api.vercel.app/api?words=10');
+      const data = await res.json();
+      setNextWords(data.slice(0, 3));
+      wordQueue.current = data.slice(3);
+    } catch (err) {
+      console.error('Failed to fetch words:', err);
     }
-    return shuffledRef.current[wordIndexRef.current++];
+  };
+
+  useEffect(() => {
+    fetchWords();
   }, []);
 
-  const [nextWords, setNextWords] = useState([
-    getRandomWord(),
-    getRandomWord(),
-    getRandomWord(),
-  ]);
+  const getRandomWord = useCallback(() => {
+    if (wordQueue.current.length === 0) {
+      fetchWords(); // refresh queue in background
+      return '...'; // fallback placeholder
+    }
+    return wordQueue.current.shift();
+  }, []);
 
   return (
     <div className="app-container">
