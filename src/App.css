@@ -6,6 +6,11 @@ body, html, #root {
   background-size: cover;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+
 .app-container {
   height: 100%;
   display: flex;

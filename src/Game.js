@@ -8,16 +8,23 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameActive, setGameActive] = useState(true);
   const containerRef = useRef(null);
+  const colors = ['#B63B42', '#BBA33D', '#B56533', '#8BB93C', '#6F57E1', '#40B98D', '#1B42D4'];
 
   useEffect(() => {
     if (!gameActive) return;
 
     const interval = setInterval(() => {
+      const BOX_WIDTH = 300;
+      const WORD_WIDTH_ESTIMATE = 80; // approx width in px
+      const maxX = BOX_WIDTH - WORD_WIDTH_ESTIMATE;
       const next = nextWords[0];
       const newWord = {
         id: Date.now(),
         word: next,
-        position: { x: Math.random() * 240, y: 0 },
+        position: { x: Math.random() * maxX, y: 0 },
+
+        fontSize: Math.floor(Math.random() * (24 - 14 + 1)) + 14,
+        color: colors[Math.floor(Math.random() * colors.length)],
       };
       setFallingWords((prev) => [...prev, newWord]);
       setNextWords((prev) => [...prev.slice(1), getRandomWord()]);
@@ -110,7 +117,13 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
         }}
       >
         {fallingWords.map((fw) => (
-          <FallingWord key={fw.id} word={fw.word} position={fw.position} />
+         <FallingWord
+            key={fw.id}
+            word={fw.word}
+            position={fw.position}
+            fontSize={fw.fontSize}
+            color={fw.color}
+          />
         ))}
 
         {!gameActive && (

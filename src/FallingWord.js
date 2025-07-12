@@ -1,19 +1,23 @@
 import React from 'react';
 
-function FallingWord({ word, position }) {
+function FallingWord({ word, position, fontSize, color }) {
   return (
     <div
       style={{
         position: 'absolute',
-        top: position.y,
-        left: position.x,
-        color: '#ffffff', 
-        fontWeight: 'bold',
-        fontSize: '18px',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        fontSize: `${fontSize}px`,
         fontFamily: '"Press Start 2P", monospace',
+        color: color,
+        textShadow: `
+          -1px -1px 0 white,
+          1px -1px 0 white,
+          -1px  1px 0 white,
+          1px  1px 0 white
+        `,
         whiteSpace: 'nowrap',
         pointerEvents: 'none',
-        transition: 'top 0.1s linear',
       }}
     >
       {word}
