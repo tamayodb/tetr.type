@@ -79,3 +79,26 @@ body, html, #root {
   text-align: center;
 }
 
+.animate-score {
+  animation: pop 0.4s ease-in-out;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    background-color: white;
+    color: black;
+  }
+  50% {
+    transform: scale(1.4);
+    background-color: yellow;
+    color: black;
+  }
+  100% {
+    transform: scale(1);
+    background-color: white;
+    color: black;
+  }
+}
+
+

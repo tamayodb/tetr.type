@@ -5,19 +5,16 @@ function FallingWord({ word, position, fontSize, color }) {
     <div
       style={{
         position: 'absolute',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: position.x,
+        top: position.y,
         fontSize: `${fontSize}px`,
-        fontFamily: '"Press Start 2P", monospace',
-        color: color,
-        textShadow: `
-          -1px -1px 0 white,
-          1px -1px 0 white,
-          -1px  1px 0 white,
-          1px  1px 0 white
-        `,
-        whiteSpace: 'nowrap',
+        color,
+        fontFamily: "'Press Start 2P', monospace",
+        userSelect: 'none',
         pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',          
+        maxWidth: '100%',     
       }}
     >
       {word}

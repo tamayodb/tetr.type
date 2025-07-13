@@ -1,31 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FallingWord from './FallingWord';
 
-function Game({ nextWords, setNextWords, getRandomWord }) {
+function Game({ nextWords, setNextWords, getRandomWord, score, setScore }) {
   const [fallingWords, setFallingWords] = useState([]);
   const [input, setInput] = useState('');
-  const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameActive, setGameActive] = useState(true);
   const containerRef = useRef(null);
-  const colors = ['#B63B42', '#BBA33D', '#B56533', '#8BB93C', '#6F57E1', '#40B98D', '#1B42D4'];
 
+  // Add a new falling word every 3 seconds
   useEffect(() => {
     if (!gameActive) return;
 
     const interval = setInterval(() => {
-      const BOX_WIDTH = 300;
-      const WORD_WIDTH_ESTIMATE = 80; // approx width in px
-      const maxX = BOX_WIDTH - WORD_WIDTH_ESTIMATE;
       const next = nextWords[0];
+      const fontSize = Math.floor(Math.random() * (24 - 14 + 1)) + 14;
+      const wordLength = next.length;
+      const estimatedWidth = fontSize * wordLength * 0.9;
+      const padding = 4;
+      const maxX = Math.max(0, 300 - estimatedWidth - padding);
+      const x = Math.random() * maxX;
+
       const newWord = {
         id: Date.now(),
         word: next,
         position: { x: Math.random() * maxX, y: 0 },
-
-        fontSize: Math.floor(Math.random() * (24 - 14 + 1)) + 14,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        fontSize,
+        color: '#ffffff',
+        speed: Math.random() * 1.5 + 0.5, // Falling speed
       };
+
       setFallingWords((prev) => [...prev, newWord]);
       setNextWords((prev) => [...prev.slice(1), getRandomWord()]);
     }, 3000);
@@ -33,28 +37,30 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
     return () => clearInterval(interval);
   }, [gameActive, nextWords, getRandomWord, setNextWords]);
 
-  // Move words downward based on difficulty
+  // Animate words falling
   useEffect(() => {
     if (!gameActive) return;
 
-    let fallSpeed = 100;
-    if (timeLeft <= 45) fallSpeed = 75;
-    if (timeLeft <= 30) fallSpeed = 50;
-    if (timeLeft <= 15) fallSpeed = 30;
+    let animationFrame;
 
-    const interval = setInterval(() => {
+    const update = () => {
       setFallingWords((prevWords) =>
-        prevWords.map((word) => ({
-          ...word,
-          position: { ...word.position, y: word.position.y + 5 },
-        }))
+        prevWords
+          .map((word) => ({
+            ...word,
+            position: { ...word.position, y: word.position.y + word.speed },
+          }))
+           .filter((word) => word.position.y < 500) 
       );
-    }, fallSpeed);
 
-    return () => clearInterval(interval);
-  }, [gameActive, timeLeft]);
+      animationFrame = requestAnimationFrame(update);
+    };
 
-  // Timer countdown
+    animationFrame = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [gameActive]);
+
+  // Countdown timer
   useEffect(() => {
     if (!gameActive || timeLeft <= 0) return;
 
@@ -78,15 +84,11 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
     setTimeLeft(60);
     setInput('');
     setFallingWords([]);
-    setNextWords([
-      getRandomWord(),
-      getRandomWord(),
-      getRandomWord()
-    ]);
+    setNextWords([getRandomWord(), getRandomWord(), getRandomWord()]);
     setGameActive(true);
   };
 
-  // Handle input
+  // Typing input handler
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInput(value);
@@ -100,9 +102,8 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
   };
 
   return (
-  <div style={{ textAlign: 'center', color: 'white' }}>
-    <h2>Time Left: {timeLeft}s</h2>
-    <h2>Score: {score}</h2>
+    <div style={{ textAlign: 'center', color: 'white' }}>
+      <h2>Time Left: {timeLeft}s</h2>
 
       <div
         ref={containerRef}
@@ -117,7 +118,7 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
         }}
       >
         {fallingWords.map((fw) => (
-         <FallingWord
+          <FallingWord
             key={fw.id}
             word={fw.word}
             position={fw.position}
@@ -137,6 +138,7 @@ function Game({ nextWords, setNextWords, getRandomWord }) {
               fontSize: '24px',
               fontWeight: 'bold',
               backgroundColor: 'white',
+              color: 'black',
               padding: '20px',
               border: '2px solid black',
               borderRadius: '10px',

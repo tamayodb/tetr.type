@@ -5,6 +5,8 @@ import './App.css';
 function App() {
   const [nextWords, setNextWords] = useState([]);
   const wordQueue = useRef([]);
+  const [score, setScore] = useState(0);
+  const [scoreAnimated, setScoreAnimated] = useState(false);
 
   const fetchWords = async () => {
     try {
@@ -21,10 +23,19 @@ function App() {
     fetchWords();
   }, []);
 
+  // Animate score change
+  useEffect(() => {
+    if (score > 0) {
+      setScoreAnimated(true);
+      const timer = setTimeout(() => setScoreAnimated(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [score]);
+
   const getRandomWord = useCallback(() => {
     if (wordQueue.current.length === 0) {
-      fetchWords(); // refresh queue in background
-      return '...'; // fallback placeholder
+      fetchWords();
+      return '...';
     }
     return wordQueue.current.shift();
   }, []);
@@ -33,8 +44,10 @@ function App() {
     <div className="app-container">
       <div className="tetr-ui">
         <div className="panel hold-panel">
-          <h3>HOLD</h3>
-          <div className="panel-box">-</div>
+          <h3>SCORE</h3>
+          <div className={`panel-box ${scoreAnimated ? 'animate-score' : ''}`}>
+            {score}
+          </div>
         </div>
 
         <div className="main-area">
@@ -42,6 +55,8 @@ function App() {
             nextWords={nextWords}
             setNextWords={setNextWords}
             getRandomWord={getRandomWord}
+            score={score}
+            setScore={setScore}
           />
         </div>
 
